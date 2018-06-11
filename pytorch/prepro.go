@@ -53,6 +53,9 @@ func main() {
 
 		for _, p := range pm {
 			bpm := new(bytes.Buffer)
+			if len(p.Paragraphs) == 0 {
+				continue
+			}
 			for _, n := range p.Paragraphs {
 				for _, c := range n {
 					var ck int
@@ -63,15 +66,15 @@ func main() {
 					} else {
 						ck = i
 					}
-					binary.Write(bpm, binary.BigEndian, int16(ck))
+					binary.Write(bpm, binary.BigEndian, uint16(ck))
 				}
 			}
-			binary.Write(buf, binary.BigEndian, int16(bpm.Len()/2))
+			binary.Write(buf, binary.BigEndian, uint16(bpm.Len()/2))
 			bpm.WriteTo(buf)
+			total++
 		}
-		total += len(pm)
 	}
-	binary.Write(fd, binary.BigEndian, int32(total))
+	binary.Write(fd, binary.BigEndian, uint32(total))
 	buf.WriteTo(fd)
 
 	for i, k := range key {
