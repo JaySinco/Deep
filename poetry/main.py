@@ -5,6 +5,7 @@ import torch.optim as optim
 import torch.autograd as autograd
 import struct
 import random
+import datetime
 
 class Poetry(nn.Module):
     def __init__(self, key_set, poem_set, embedding_size=512, hidden_size=512):
@@ -52,10 +53,11 @@ class Poetry(nn.Module):
             iop = index
         return "".join(content)
 
-    def train(self, start_index, end_index):
+    def train_i(self, start_index, end_index):
         for index in range(start_index, end_index):
-            if (index-start_index)%20 == 0:
-                print(index, self.test(0, 20))
+            if (index-start_index)%50 == 0:
+                now = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+                print("{} ({:5d})  {}".format(now, index, self.test(0, 50)))
             self.zero_grad()
             pm = self.poems[index]
             hidden = self.init_hidden()
@@ -67,6 +69,11 @@ class Poetry(nn.Module):
             loss = self.criterion(op, it)
             loss.backward()
             self.optimizer.step()
+
+    def train(self, epoch=1):
+        for i in range(0, epoch):
+            print("==== epoch {} ====".format(i))
+            self.train_i(0, len(self.poems))
 
     def test(self, start, end):
         loss = 0
@@ -98,6 +105,5 @@ keys = kf.read().split("\n")
 kf.close()
 
 net = Poetry(keys, poems)
-
-   
-
+net.train(30)
+torch.save(net, "poetry.torch")
